@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "rclcpp/rclcpp.hpp"
 #include "vicon_receiver/msg/position.hpp"
+#include "vicon_receiver/msg/position_list.hpp"
 
 // Struct used to hold segment data to transmit to the Publisher class.
 struct PositionStruct
@@ -22,15 +23,19 @@ class Publisher
 {
 private:
     rclcpp::Publisher<vicon_receiver::msg::Position>::SharedPtr position_publisher_;
+    rclcpp::Publisher<vicon_receiver::msg::PositionList>::SharedPtr position_list_publisher_;
 
 public:
     bool is_ready = false;
 
-    Publisher(std::string topic_name, rclcpp::Node* node);
+    Publisher(std::string topic_name, rclcpp::Node* node, bool default_topic=false);
 
     // Publishes the given position in the ROS2 topic whose name is indicated in
     // the constructor.
     void publish(PositionStruct p);
+    // Publishes the given position list in the ROS2 topic whose name is indicated in
+    // the constructor.
+    void publish(std::vector <PositionStruct> p);
 };
 
 #endif

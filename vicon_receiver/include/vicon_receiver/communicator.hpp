@@ -40,6 +40,14 @@ public:
     // functions to create a segment publisher in a new thread
     void create_publisher(const string subject_name, const string segment_name);
     void create_publisher_thread(const string subject_name, const string segment_name);
+
+    /**
+     * Sindiso
+     * Functions to create default publisher in a new thread
+     */
+    void create_publisher_();
+    void create_publisher_thread_();
+
 };
 
 #endif // COMMUNICATOR_HPP

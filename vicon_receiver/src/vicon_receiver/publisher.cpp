@@ -1,8 +1,11 @@
 #include "vicon_receiver/publisher.hpp"
 
-Publisher::Publisher(std::string topic_name, rclcpp::Node* node)
-{
-    position_publisher_ = node->create_publisher<vicon_receiver::msg::Position>(topic_name, 10);
+Publisher::Publisher(std::string topic_name, rclcpp::Node* node, bool default_topic)
+{   
+    if (!default_topic)
+        position_publisher_ = node->create_publisher<vicon_receiver::msg::Position>(topic_name, 10);
+    else
+        position_list_publisher_ = node->create_publisher<vicon_receiver::msg::PositionList>(topic_name, 10);
     is_ready = true;
 }
 
@@ -21,4 +24,26 @@ void Publisher::publish(PositionStruct p)
     msg->frame_number = p.frame_number;
     msg->translation_type = p.translation_type;
     position_publisher_->publish(*msg);
+}
+
+void Publisher::publish(std::vector <PositionStruct> p)
+{   
+    auto positionList = std::make_shared<vicon_receiver::msg::PositionList>();
+    positionList -> n = p.size();
+    for(int i = 0; i < positionList->n; i++){
+        auto msg = std::make_shared<vicon_receiver::msg::Position>();
+        msg->x_trans = p[i].translation[0];
+        msg->y_trans = p[i].translation[1];
+        msg->z_trans = p[i].translation[2];
+        msg->x_rot = p[i].rotation[0];
+        msg->y_rot = p[i].rotation[1];
+        msg->z_rot = p[i].rotation[2];
+        msg->w = p[i].rotation[3];
+        msg->subject_name = p[i].subject_name;
+        msg->segment_name = p[i].segment_name;
+        msg->frame_number = p[i].frame_number;
+        msg->translation_type = p[i].translation_type;
+        positionList -> positions.push_back(*msg);
+    }
+    position_list_publisher_ -> publish(*positionList);
 }

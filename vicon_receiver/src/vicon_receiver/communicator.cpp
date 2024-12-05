@@ -79,6 +79,10 @@ void Communicator::get_frame()
 
     map<string, Publisher>::iterator pub_it;
 
+    /**
+     * Get the positions of all segments in the arena
+     */
+    std::vector <PositionStruct> current_positions_list;
     for (unsigned int subject_index = 0; subject_index < subject_count; ++subject_index)
     {
         // get the subject name
@@ -124,6 +128,7 @@ void Communicator::get_frame()
                     if (pub.is_ready)
                     {
                         pub.publish(current_position);
+                        current_positions_list.push_back(current_position);
                     }
                 }
                 else
@@ -135,6 +140,31 @@ void Communicator::get_frame()
             }
         }
     }
+    /**
+     * Publish the list of positions of all hte objects/individuals in the arena
+     */
+    boost::mutex::scoped_try_lock lock(mutex);
+    if (lock.owns_lock())
+    {
+        // get publisher
+        pub_it = pub_map.find("default/topic");
+        if (pub_it != pub_map.end())
+        {
+            Publisher & pub = pub_it->second;
+
+            if (pub.is_ready)
+            {
+                pub.publish(current_positions_list);
+            }
+        }
+        else
+        {
+            // create publisher if not already available
+            lock.unlock();
+            create_publisher_();
+        }
+    }
+
 }
 
 void Communicator::create_publisher(const string subject_name, const string segment_name)
@@ -156,6 +186,31 @@ void Communicator::create_publisher_thread(const string subject_name, const stri
 
     // we don't need the lock anymore, since rest is protected by is_ready
     lock.unlock();
+}
+
+/**
+ * Default publisher functions
+ */
+void Communicator::create_publisher_()
+{
+    boost::thread(&Communicator::create_publisher_thread_, this);
+}
+
+void Communicator::create_publisher_thread_()
+{
+    std::string topic_name = ns_name + "/default/data";
+
+    string msg = "Creating default publisher for all objects tracked on vicon";
+    cout << msg << endl;
+
+    // create publisher
+    boost::mutex::scoped_lock lock(mutex);
+    pub_map.insert(std::map<std::string, Publisher>::value_type("default/topic", Publisher(topic_name, this, true)));
+
+    // we don't need the lock anymore, since rest is protected by is_ready
+    lock.unlock();
+    string msg2 = "Default publisher for all objects tracked on vicon created successfully";
+    cout << msg2 << endl;
 }
 
 int main(int argc, char** argv)

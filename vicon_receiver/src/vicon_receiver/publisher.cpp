@@ -33,6 +33,8 @@ void Publisher::publish(std::vector <PositionStruct> p)
 {   
     auto positionList = std::make_shared<vicon_receiver::msg::PositionList>();
     positionList -> n = p.size();
+    positionList->header.stamp = node_->now();        
+    positionList->header.frame_id = "vicon_world";    
     for(int i = 0; i < positionList->n; i++){
         auto msg = std::make_shared<vicon_receiver::msg::Position>();
         msg->x_trans = p[i].translation[0];

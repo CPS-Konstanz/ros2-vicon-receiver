@@ -23,6 +23,7 @@ struct PositionStruct
 class Publisher
 {
 private:
+    rclcpp::Node* node_;
     rclcpp::Publisher<vicon_receiver::msg::Position>::SharedPtr position_publisher_;
     rclcpp::Publisher<vicon_receiver::msg::PositionList>::SharedPtr position_list_publisher_;
 

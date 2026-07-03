@@ -1,7 +1,8 @@
 #include "vicon_receiver/publisher.hpp"
 
 Publisher::Publisher(std::string topic_name, rclcpp::Node* node, bool default_topic)
-{   
+{
+    node_ = node;
     if (!default_topic)
         position_publisher_ = node->create_publisher<vicon_receiver::msg::Position>(topic_name, 10);
     else
